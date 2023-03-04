@@ -1,10 +1,10 @@
 ---
 title: "STATS 140XP Final Project EDA"
-author: "Prateik Sinha"
+author: "Prateik Sinha | Jim Liu | Ang Li | Kris Jin | Owen Sun | Yixiang Gao"
 date: '`r Sys.Date()`'
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -32,6 +32,12 @@ cat("Summary:\n",data$summary[1], "\n\n","Text:\n", data$text[1])
 
 On inspecting the data, we can see that the summary is always a substring of the text column. Since it provides no additional information we can remove the summary column.
 
+Plotting each sighting on a map using its longitude and latitude, we get the following:
+
+![Plot of UFO sightings on map](ufo_map.png)
+
+We can see that the sightings are correlated with areas of higher population in general, which makes sense. One thesis we could test is checking whether these sightings happen disproportionately near areas with US military bases, which would lend some credence to conspiracy theories suggesting that sights such as Area 51 are areas of extra terrestrial activity
+
 ```{r include=FALSE}
 data2 <- data %>% select(-summary)
 data2
@@ -54,10 +60,11 @@ data2
 
 Let us look at the distribution of these reports with respect to time:
 
-```{r echo=FALSE, warning=FALSE}
+```{r echo=FALSE, warning=FALSE, fig.height = 3.5}
 # warnings turned off, since we want to ignore NAs
 ggplot(data2, aes(x = date_time)) +
   geom_histogram(aes(fill = shape), bins = 50) +
+  labs(x = "time") + 
   theme_light()
 ```
 
@@ -65,7 +72,7 @@ We can see that there was a peak in the mid-2010s, with the distribution appeari
 
 Although the relative proportions of the shapes of UFOs being reported seems to stay fairly constant throughout the years, we can look further into which shapes are more frequent occurrences and how their popularity changes over time:
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.height = 3.5}
 library(forcats)
 ggplot(data2, aes(x = fct_infreq(shape))) +
   geom_bar(aes(fill = shape)) +
@@ -114,9 +121,8 @@ From the above graph we can see:
 
 -   The vast number of different categories makes the data hard to analyse. Since many of these are very similar, they can be wrapped up into larger parent categories. For example, light, fireball and flash can be combined into a single category; circle, oval, egg etc. can be combined into another, and so on.
 
-```{=html}
 <!-- -->
-```
+
 -   The distribution appears to be tri-modal
 
 -   The second mode is the largest, and contains a narrow and steep peak of reports, motly of light-shaped UFOs. This warrants further investigation into real life events at the time to see if this can be explained by events happening at the time.
@@ -160,7 +166,7 @@ Combining the categories, these are all the shapes that had other shapes absorbe
 
 Examining the second graph again with our new shapes, and zooming to the 2nd mode:
 
-```{r echo=FALSE, warning=FALSE}
+```{r echo=FALSE, warning=FALSE, fig.height = 3.5}
 # warnings are turned off so because we want to ignore NA values
 ggplot(data2, aes(x = date_time)) +
   geom_density(aes(fill = shape), alpha = 0.3, position = "stack") +
@@ -171,3 +177,41 @@ ggplot(data2, aes(x = date_time)) +
     axis.text.y = element_blank()
   )
 ```
+
+Moving on from the shapes, next let's examine what part of the year these sightings normally take place in to see if they are more common during certain seasons
+
+```{r echo=FALSE, warning=FALSE}
+
+data3 <- data2 %>% 
+  mutate("date_no_year" = as.POSIXct(
+    format(date_time, format = "%m-%d"),
+    format = "%m-%d")
+    )
+
+ggplot(data3,
+       aes(x = date_no_year)) +
+  geom_density(aes(fill = shape), alpha = 0.3) +
+  labs(x = "time") +
+  theme_light() +
+  theme(
+    axis.text.y = element_blank()
+  )
+```
+
+The sightings seem to increase slowly throughout the year, with peaks in July, and curiously, a second peak of only chevron shaped UFOs around November. The second peak may likely be a single event that was reported by many people which is skewing the results and warrants further investigation.
+
+### Ideas for research questions:
+
+1.  *Are UFO sightings more likely to occur in certain geographic regions or at particular times of the year?*
+
+2.  *Is there any correlation between reported UFO sightings and the presence of military installations or other government facilities?*
+
+3.  *Can machine learning algorithms accurately classify UFO sightings based on their reported characteristics, such as shape or color?*
+
+4.  *Are there any patterns or trends in the language used to describe UFO encounters, and can these patterns shed light on the psychological or cultural factors that contribute to belief in UFOs?*
+
+5.  *Are there any demographic or other social factors that predict belief in UFOs or likelihood of reporting a sighting?*
+
+6.  *How has media coverage and public perception of UFOs changed over time, and what factors have contributed to these shifts?*
+
+7.  *Is there any evidence to suggest that UFO sightings could be linked to extraterrestrial life, or are there other explanations that can account for these phenomena?*
